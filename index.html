@@ -1,257 +1,49 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
+<head><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta charset="UTF-8">
-<title>종합소득세 시뮬레이터 — 근로소득 + 배당소득 비교과세</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-    background: #f5f6f8;
-    color: #1f2937;
-    line-height: 1.5;
-    padding: 24px 16px;
-  }
-  .wrap { max-width: 1400px; margin: 0 auto; }
-  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-  .left-col, .right-col { display: flex; flex-direction: column; min-width: 0; }
-  @media (max-width: 1000px) { .columns { grid-template-columns: 1fr; gap: 0; } }
-  h1 { font-size: 22px; font-weight: 700; color: #111827; margin-bottom: 4px; }
-  .subtitle { font-size: 13px; color: #6b7280; margin-bottom: 20px; }
+<title>배당 세금 한눈에 · 추가 부담 시뮬레이터</title>
 
-  .card {
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-  }
-  .card h2 {
-    font-size: 15px;
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 14px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #f3f4f6;
-  }
-
-  .inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 720px) { .inputs { grid-template-columns: 1fr; } }
-
-  .input-group label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 6px;
-  }
-  .value-display {
-    font-size: 22px;
-    font-weight: 700;
-    color: #1e40af;
-    margin-bottom: 10px;
-    font-variant-numeric: tabular-nums;
-  }
-  .value-display .unit { font-size: 13px; color: #6b7280; font-weight: 500; margin-left: 4px; }
-  input[type="range"] {
-    width: 100%;
-    height: 6px;
-    -webkit-appearance: none;
-    appearance: none;
-    background: #e5e7eb;
-    border-radius: 999px;
-    margin: 12px 0 8px;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #2563eb;
-    cursor: pointer;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-  }
-  input[type="range"]::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background: #2563eb;
-    cursor: pointer;
-    border: none;
-  }
-  input[type="number"] {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 13px;
-    font-variant-numeric: tabular-nums;
-  }
-  .range-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: #9ca3af;
-  }
-  .settings-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    color: #374151;
-  }
-  .settings-row input { max-width: 160px; }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    font-variant-numeric: tabular-nums;
-  }
-  th, td {
-    text-align: left;
-    padding: 8px 10px;
-    border-bottom: 1px solid #f3f4f6;
-  }
-  th { background: #f9fafb; font-weight: 600; color: #374151; }
-  td.num { text-align: right; }
-  td.label { color: #4b5563; }
-  tr.total td { border-top: 2px solid #d1d5db; font-weight: 700; background: #fafbfc; }
-
-  .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 720px) { .method-grid { grid-template-columns: 1fr; } }
-
-  .method {
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 14px;
-    background: #fafafa;
-  }
-  .method.win {
-    border-color: #2563eb;
-    background: #eff6ff;
-    box-shadow: 0 0 0 1px #2563eb inset;
-  }
-  .method-title {
-    font-weight: 700;
-    font-size: 14px;
-    margin-bottom: 8px;
-    color: #1f2937;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .badge {
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: #2563eb;
-    color: #fff;
-    font-weight: 600;
-  }
-  .badge.muted { background: #d1d5db; color: #6b7280; }
-
-  .bracket-info {
-    display: inline-block;
-    font-size: 11px;
-    padding: 2px 7px;
-    background: #fef3c7;
-    color: #92400e;
-    border-radius: 4px;
-    margin-left: 6px;
-    font-weight: 600;
-  }
-
-  .final {
-    background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
-    color: #fff;
-    border-radius: 10px;
-    padding: 22px;
-    margin-top: 12px;
-  }
-  .final-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 6px 0;
-    font-size: 14px;
-  }
-  .final-row.big {
-    border-top: 1px solid rgba(255,255,255,0.3);
-    margin-top: 10px;
-    padding-top: 14px;
-    font-size: 16px;
-    font-weight: 700;
-  }
-  .final-row .v {
-    font-variant-numeric: tabular-nums;
-    font-weight: 700;
-  }
-  .final-row.big .v { font-size: 24px; }
-
-  .note {
-    font-size: 11.5px;
-    color: #6b7280;
-    background: #f9fafb;
-    padding: 10px 12px;
-    border-radius: 6px;
-    margin-top: 12px;
-    line-height: 1.6;
-  }
-
-  .separate-notice {
-    background: #fffbeb;
-    border: 1px solid #fde68a;
-    color: #92400e;
-    padding: 10px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    margin-bottom: 12px;
-  }
-
-  details { margin-top: 10px; font-size: 12.5px; }
-  summary { cursor: pointer; color: #2563eb; font-weight: 600; padding: 6px 0; }
-  details[open] summary { margin-bottom: 8px; }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>종합소득세 시뮬레이터</h1>
-  <p class="subtitle">근로소득 + 배당소득 비교과세(소득세법 §62) 산출</p>
-
-  <div class="columns">
-   <div class="left-col">
-
-  <!-- INPUT -->
-  <div class="card">
-    <h2>입력</h2>
+<style>*{box-sizing:border-box}body{margin:0;background:#f4f6f9;color:#24344b;font:14px/1.6 -apple-system,BlinkMacSystemFont,'Malgun Gothic',sans-serif;letter-spacing:-.35px}button,input,select{font:inherit}button,summary{cursor:pointer}button{border:0}button:focus-visible,summary:focus-visible{outline:3px solid #85a5f4;outline-offset:3px}button:active{transform:translateY(1px)}.app{max-width:1360px;margin:auto;padding:0 32px}header{display:flex;justify-content:space-between;align-items:center;height:80px;border-bottom:1px solid #e3e8ef;gap:15px}.brand{font-size:14px;font-weight:750;letter-spacing:1.2px;display:flex;align-items:center;gap:10px}.brand>span{background:#294f93;color:white;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:19px}.headernote{font-size:11px;color:#8a96a9;margin-right:auto;margin-left:20px}#printBtn{border:1px solid #dce3ed;background:white;padding:9px 14px;border-radius:7px;font-size:11px;color:#64728a}.page-title{display:flex;align-items:center;justify-content:space-between;margin:32px 0 25px;gap:20px}.eyebrow{font-size:9px;letter-spacing:2.1px;font-weight:600;color:#8393ac}h1{font-size:28px;letter-spacing:-1.2px;font-weight:650;margin:8px 0}p{margin:0}h2{font-size:15px;margin:0;font-weight:650}.page-title p{color:#8090a5;font-size:12px}.estimate{border:1px solid #dae2ee;padding:6px 10px;border-radius:6px;color:#7b889e;font-size:10px;white-space:nowrap}.workspace{display:grid;grid-template-columns:310px minmax(0,1fr);gap:24px;align-items:start}#inputs{position:sticky;top:20px;min-width:0}.card,.panel{background:white;border:1px solid #e3e8f0;border-radius:12px;padding:23px;margin-bottom:18px;min-width:0}.card h2{margin:0 0 20px}.card h2 small{display:block;font-size:10px;color:#8391a5;margin-top:4px;font-weight:400}.input-group{margin:22px 0 28px}.input-group label{display:block;font-size:11px;color:#8190a6;margin-bottom:8px}.value-display{font-size:25px;font-weight:600;letter-spacing:-1px;color:#29476f;font-variant-numeric:tabular-nums}.unit{font-size:12px;margin-left:4px;color:#8d9aae;font-weight:400}input[type=number],select{width:100%;border:1px solid #dfe6ef;border-radius:6px;padding:10px 12px;background:#fbfcfe;color:#425b7d;font-size:13px}input:focus,select:focus{outline:2px solid #b4c9f7;outline-offset:1px}input[type=range]{width:100%;height:5px;margin:15px 0 6px;accent-color:#466fc5;cursor:pointer}.range-labels{display:flex;justify-content:space-between;font-size:9px;color:#95a0b1;margin-bottom:12px}.quick{display:flex;flex-wrap:wrap;gap:5px}.quick span{display:block;width:100%;font-size:10px;color:#8391a5;margin-bottom:4px}.quick button{background:#edf2fa;color:#61769a;border-radius:5px;padding:7px 9px;font-size:10px}.quick button.selected{background:#345d9c;color:#fff}.settings-row{display:flex;flex-wrap:wrap;gap:7px;font-size:11px;color:#7d8a9d}.settings-row label{width:100%;font-size:11px}.settings-row input{width:calc(100% - 22px)}.basis{border-top:1px solid #edf0f5;margin-top:22px;padding-top:19px}.basis label{display:block;font-size:11px;color:#7d8a9d;margin-bottom:8px}.basis select{font-size:11px}.basis small{display:block;font-size:10px;color:#8996a8;margin-top:8px;line-height:1.7}.scope{margin-top:20px;padding:13px;background:#f3f6fb;color:#8795aa;font-size:10px;border-radius:7px;line-height:1.9}.hero{background:linear-gradient(120deg,#203858,#304b76);border:1px solid #2f476c;border-radius:15px;padding:25px 30px;color:#f6f9ff;margin-bottom:17px}.hero-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.hero .eyebrow{color:#a2b6d6}.hero-top #regime{font-size:9px;color:#c3d3ed;border:1px solid #637b9e;border-radius:4px;padding:4px 7px}.viewtabs{display:flex;gap:4px;margin:23px 0 22px;padding:3px;background:#142e4e70;border-radius:7px;width:fit-content}.viewtabs button{background:transparent;color:#b6c7e0;padding:8px 12px;font-size:11px;border-radius:5px}.viewtabs button.active{background:#eef3fc;color:#2c4b77;font-weight:600}.hero h2{font-size:13px;color:#cfdef3;font-weight:400}.hero-amount{display:flex;align-items:baseline;gap:10px;margin:8px 0 6px;flex-wrap:wrap}.hero-amount>span{font-size:51px;line-height:1.2;letter-spacing:-2.3px;font-weight:550;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.hero-amount>small{font-size:12px;color:#b5c7e0}.hero #heroExplain{font-size:11px;color:#b2c4dd;line-height:1.8}.hero-split{display:grid;grid-template-columns:1fr 25px 1fr;gap:15px;margin-top:26px;padding-top:21px;border-top:1px solid #ffffff25}.hero-split>div>span{display:block;font-size:11px;color:#b8cbe8}.hero-split b{font-size:23px;display:block;font-weight:550;margin:6px 0 4px;letter-spacing:-.7px}.hero-split small{font-size:10px;color:#91abcF}.plus{font-size:20px;color:#7a94b7;align-self:center}.hero-foot{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #ffffff20;margin-top:20px;padding-top:13px;font-size:10px;color:#92accd}.hero-foot b{color:#bfd0e8;font-weight:500}.tiles{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:19px}.tiles>div{border:1px solid #e1e7f0;background:white;border-radius:10px;padding:20px 23px}.tiles span{font-size:11px;color:#8492a6;display:block}.tiles strong{display:block;font-size:25px;letter-spacing:-.9px;color:#50647f;font-weight:550;margin:6px 0}.tiles strong.green{color:#297b64}.tiles small{font-size:10px;color:#95a1b1}.sectionhead{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:6px}.sectionhead>span{font-size:10px;color:#91a0b2}.muted{font-size:11px;color:#8b99ad;line-height:1.8}.flow{display:grid;grid-template-columns:1fr 15px 1fr 15px 1.2fr 15px 1fr;align-items:center;gap:7px;padding:23px 0}.flow small{font-size:10px;color:#8998ab;display:block;margin-bottom:7px}.flow b{font-size:15px;font-weight:600;letter-spacing:-.4px;overflow-wrap:anywhere}.flow>span{color:#a4afbf;font-size:14px}.flow .net b{color:#277e66}.stack{display:flex;height:17px;border-radius:5px;overflow:hidden;background:#edf0f5}.stack>span{height:100%;min-width:0;transition:width .22s}.legend{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;margin-top:18px}.legend>div{display:flex;gap:7px;align-items:center;justify-content:space-between;font-size:10px;color:#8795a9}.legend i{width:7px;height:7px;display:inline-block;border-radius:2px;margin-right:6px}.legend b{color:#62738c;font-weight:500;white-space:nowrap}.burdenline{display:flex;gap:15px;justify-content:space-between;font-size:11px;border-top:1px solid #edf1f6;margin-top:20px;padding-top:14px;color:#8897aa}.burdenline b{font-weight:600;color:#435b7e;margin-left:6px}.reconcile-row{display:flex;justify-content:space-between;gap:18px;padding:11px 0;font-size:12px;color:#8190a5}.reconcile-row b{color:#4e6380;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}.reconcile-row.emphasis{border-top:1px solid #e7edf5;margin-top:4px;padding-top:16px;color:#365984;font-weight:600}.reconcile-row.emphasis b{font-size:19px;color:#345e99;font-weight:650}.reconcile>.muted{font-size:10px;margin-top:12px}.detail{background:#fff;border:1px solid #e1e7ef;border-radius:10px;margin-bottom:13px;overflow:hidden}.detail>summary{display:flex;align-items:center;justify-content:space-between;padding:19px 23px;list-style:none;gap:15px}.detail>summary::-webkit-details-marker{display:none}.detail>summary b{font-size:12px;font-weight:600}.detail>summary small{display:block;font-size:10px;color:#94a1b1;margin-top:3px}.detail>summary>span:last-child{color:#8d9cb0;font-size:20px}.detail[open]>summary{border-bottom:1px solid #edf0f6}.detail[open]>summary>span:last-child{transform:rotate(45deg)}#detailContents{padding:18px;background:#f7f9fc}table{border-collapse:collapse;width:100%;font-size:11px;font-variant-numeric:tabular-nums}td,th{padding:10px 8px;border-bottom:1px solid #edf1f6;text-align:left}td.num,th.num{text-align:right;white-space:nowrap}td small{display:block;font-size:9px;color:#93a0b2}.total{background:#f0f4fa;font-weight:600}.method-grid{display:grid;grid-template-columns:1fr;gap:15px}.method{border:1px solid #e1e7f0;border-radius:7px;padding:13px}.method.win{border-color:#abc0e2}.method-title{display:flex;gap:10px;justify-content:space-between;font-size:12px;margin-bottom:12px}.badge{background:#e6eefb;color:#5274a7;border-radius:4px;padding:3px 6px;font-size:9px;white-space:nowrap}.badge.muted{background:#f0f2f6;color:#929dae}.bracket-info{display:inline-block;background:#edf3fc;padding:2px 5px;border-radius:4px;color:#5c79a7}.separate-notice,.note,.detailnote{font-size:11px;line-height:1.9;color:#7f8da2;margin:12px 0}.rates{display:flex;flex-wrap:wrap;gap:18px;margin:18px 0;font-size:10px;color:#8b99ad}.rates b{display:block;font-size:17px;color:#526e94}.assumptions>div{padding:18px 23px;font-size:11px;color:#7e8da3;line-height:1.9}.assumptions p{margin-bottom:13px}a{color:#5276ac}footer{padding:23px 0 30px;color:#9aa6b6;font-size:10px;text-align:center}
+@media(min-width:1400px){.hero-amount>span{font-size:58px}.hero{padding:29px 34px}}
+@media(max-width:1000px){.app{padding:0 22px}.workspace{grid-template-columns:270px minmax(0,1fr);gap:18px}.hero{padding:22px}.hero-amount>span{font-size:42px}.hero-split b{font-size:20px}.hero-split{gap:10px}.tiles>div{padding:17px}.tiles strong{font-size:21px}.flow{grid-template-columns:1fr;gap:5px}.flow>div{display:flex;justify-content:space-between;gap:10px}.flow small{margin:0}.flow>span{display:none}.flow>div:not(:first-child) small:before{content:'− ';color:#9ba9bd}.flow>div.net small:before{content:'= '}.flow .net{border-top:1px solid #edf0f6;margin-top:6px;padding-top:10px}.legend{grid-template-columns:1fr}.headernote{display:none}h1{font-size:25px}.estimate{font-size:9px}}
+@media(max-width:760px){.workspace{grid-template-columns:1fr}#inputs{position:static}.inputs{display:grid;grid-template-columns:1fr 1fr;gap:20px}.input-group{margin:0 0 18px}.basis{margin-top:16px}.scope{margin-top:15px}.results{min-width:0}.hero-amount>span{font-size:47px}.legend{grid-template-columns:1fr 1fr}.page-title{align-items:flex-start}.estimate{display:none}.hero-split b{font-size:24px}input[type=number],select{font-size:16px}.quick button{min-height:40px}.viewtabs button{min-height:44px}.panel{padding:22px}.tiles strong{font-size:25px}}
+@media(max-width:430px){.app{padding:0 14px}header{height:64px}.page-title{margin:24px 0 19px}h1{font-size:22px;line-height:1.5}.page-title p{font-size:11px}.inputs{gap:14px}.value-display{font-size:20px}.unit{font-size:10px}.card{padding:18px}.hero{padding:21px 20px;border-radius:12px}.hero-amount>span{font-size:40px}.hero-amount>small{font-size:10px}.hero-top .eyebrow{font-size:8px;letter-spacing:1.5px}.hero-top #regime{font-size:8px}.viewtabs button{font-size:11px;padding:7px 10px}.hero-split{grid-template-columns:1fr;gap:12px;margin-top:20px;padding-top:17px}.hero-split .plus{display:none}.hero-split>div{display:grid;grid-template-columns:1fr auto;gap:2px 8px}.hero-split b{font-size:20px;margin:0;grid-column:2;grid-row:1/3}.hero-split small{grid-column:1;font-size:9px}.hero-split>div>span{font-size:10px}.hero-foot{font-size:9px;flex-wrap:wrap}.tiles{gap:10px}.tiles>div{padding:16px 13px}.tiles span{font-size:10px}.tiles strong{font-size:21px;overflow-wrap:anywhere}.tiles small{font-size:9px;display:block;line-height:1.6}.panel{padding:19px}.legend{grid-template-columns:1fr}.burdenline{font-size:10px;flex-wrap:wrap}.reconcile-row{font-size:11px}.detail>summary{padding:17px 19px}.detail summary small{font-size:9px}#detailContents{padding:9px}table{font-size:10px}td,th{padding:9px 5px}.method-title{font-size:10px}.method{padding:10px}.range-labels{font-size:8px}.settings-row{font-size:10px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{body{background:white}.app{max-width:none;padding:0}#inputs,header button,.viewtabs,.detail:not([open]),footer{display:none}.workspace{display:block}.hero{background:#f0f4fa!important;color:#24344b!important;break-inside:avoid}.hero *{color:#24344b!important}.hero-amount>span{font-size:36px}.panel,.tiles{break-inside:avoid}.page-title{margin:15px 0}.headernote{display:block}}
+.current-inputs{font-size:10px;color:#9bb2d1;margin-top:13px;line-height:1.7}
+@media(max-width:760px){.workspace{display:flex;flex-direction:column;gap:0}.results{display:contents}.hero{order:-2;width:100%}#inputs{order:-1;width:100%}.tiles,.panel,.detail{width:100%}}
+@media print{.results{display:block}.workspace{display:block}}
+</style></head>
+<body><div class="app"><header><div class="brand"><span>₩</span> TAX / CLEAR</div><span class="headernote">근로소득 + 배당소득 시뮬레이터</span><button id="printBtn">인쇄 / PDF</button></header><div class="page-title"><div><span class="eyebrow">DIVIDEND TAX PLANNER</span><h1>세금, 얼마나 더 준비해야 할까요?</h1><p>이미 낸 돈과 앞으로 낼 돈을 나눠서 확인하세요.</p></div><span class="estimate">예상 부담 · 실제 고지액 아님</span></div><main class="workspace"><aside id="inputs"><div class="card">
+    <h2>소득을 입력하세요</h2>
     <div class="inputs">
       <div class="input-group">
         <label>총급여 (연봉)</label>
         <div class="value-display"><span id="salaryDisplay">100,000,000</span><span class="unit">원</span></div>
-        <input type="range" id="salary" min="0" max="1000000000" step="100000" value="100000000">
+        <input aria-label="연간 총급여 슬라이더" type="range" id="salary" min="0" max="1000000000" step="100000" value="100000000">
         <div class="range-labels"><span>0</span><span>5억</span><span>10억</span></div>
-        <input type="number" id="salaryNum" min="0" max="1000000000" step="100000" value="100000000">
+        <input aria-label="연간 총급여 원 단위" type="number" id="salaryNum" min="0" max="1000000000" step="100000" value="100000000">
       </div>
       <div class="input-group">
         <label>배당금 (연간, 세전)</label>
         <div class="value-display"><span id="divDisplay">25,000,000</span><span class="unit">원</span></div>
-        <input type="range" id="dividend" min="0" max="1000000000" step="100000" value="25000000">
+        <input aria-label="연간 세전 배당금 슬라이더" type="range" id="dividend" min="0" max="1000000000" step="100000" value="25000000">
         <div class="range-labels"><span>0</span><span>5억</span><span>10억</span></div>
-        <input type="number" id="divNum" min="0" max="1000000000" step="100000" value="25000000">
+        <input aria-label="연간 세전 배당금 원 단위" type="number" id="divNum" min="0" max="1000000000" step="100000" value="25000000">
       </div>
-    </div>
+    </div><div class="quick"><span>배당 빠른 입력</span><button type="button" data-div="10000000">1천만</button><button type="button" data-div="20000000">2천만</button><button type="button" data-div="25000000">2.5천만</button><button type="button" data-div="50000000">5천만</button><button type="button" data-div="100000000">1억</button></div>
     <hr style="margin: 18px 0 14px; border: none; border-top: 1px solid #f3f4f6;">
     <div class="settings-row">
       <label>종합소득공제 (본인 인적공제 등):</label>
-      <input type="number" id="deduction" value="1500000" step="100000" min="0">
+      <input aria-label="종합소득공제 원 단위" type="number" id="deduction" value="1500000" step="100000" min="0">
       <span style="color:#6b7280;">원</span>
     </div>
-  </div>
-
-  <!-- STEP 1: 근로소득금액 -->
-  <div class="card">
+  <div class="basis"><label for="insuranceBasis">건강·장기요양 기준</label><select id="insuranceBasis"><option value="official">2026 공단 공식 요율</option><option value="original">원본 요율과 비교</option></select><small id="basisNote"></small></div><div class="scope">직장가입자 · 근로소득 + 일반 배당 가정<br>국내·해외 배당별 세액공제와 실제 기납부세액은 반영하지 않은 추정치입니다.</div></div></aside><article class="results"><section class="hero"><div class="hero-top"><span class="eyebrow">YOUR TAX OUTLOOK</span><span id="regime"></span></div><div class="viewtabs" role="group" aria-label="부담 관점 선택"><button class="active" id="modeExtra" aria-pressed="true">추가로 준비할 돈</button><button id="modeTotal" aria-pressed="false">배당의 전체 부담</button></div><h2 id="heroTitle">추가로 준비할 돈</h2><div class="hero-amount"><span id="heroAmount">—</span><small>원 / 연간</small></div><p id="heroExplain"></p><div class="hero-split"><div><span id="taxSplitLabel">추가 세금</span><b id="taxSplit"></b><small>소득세 + 지방소득세</small></div><span class="plus">＋</span><div><span>추가 건강·장기요양보험료</span><b id="healthSplit"></b><small>세금과 별도로 부과</small></div></div><p class="current-inputs" id="currentInputs"></p><div class="hero-foot"><span>보험료 월 환산 <b id="healthMonthly"></b></span><span>원천징수 가정 <b>15.4%</b></span></div></section>
+<section class="tiles"><div><span>배당 받을 때 이미 차감</span><strong id="already"></strong><small>추가 납부액에 다시 더하지 않습니다.</small></div><div><span>모든 부담을 뺀 배당금</span><strong class="green" id="netDividend"></strong><small>세금 + 배당분 보험료 차감 후</small></div></section>
+<section class="panel"><div class="sectionhead"><h2>배당금의 흐름</h2><span>연간 · 원</span></div><p class="muted">원천징수부터 최종 잔액까지, 한 번씩만 차감합니다.</p><div class="flow"><div><small>세전 배당</small><b id="flowGross"></b></div><span>−</span><div><small>원천징수</small><b id="flowWith"></b></div><span>−</span><div><small>추가 세금·보험료</small><b id="flowLater"></b></div><span>＝</span><div class="net"><small>최종 배당 잔액</small><b id="flowNet"></b></div></div><div class="stack" id="burdenBar" role="img"></div><div class="legend" id="legend"></div><div class="burdenline"><span>배당 전체 부담률 <b id="totalRate"></b></span><span>총 부담 <b id="totalBurden"></b></span></div></section>
+<section class="panel reconcile"><div class="sectionhead"><h2>추가 세금이 나오는 이유</h2><span>보험료 제외</span></div><div class="reconcile-row"><span>근로 + 배당의 연간 총세금</span><b id="recTotal"></b></div><div class="reconcile-row"><span>− 근로분 기납부 추정액</span><b id="recWage"></b></div><div class="reconcile-row"><span>− 배당 원천징수 가정액</span><b id="recDiv"></b></div><div class="reconcile-row emphasis"><span>= 앞으로 낼 세금 추정액</span><b id="recExtra"></b></div><p class="muted">근로분은 실제 납부액을 입력한 값이 아니라 근로 단독 세액으로 추정한 금액입니다.</p></section>
+<details class="detail"><summary><span><b>상세 계산 확인</b><small>소득공제 · 비교과세 · 보험료 · 세율표</small></span><span>＋</span></summary><div id="detailContents"><div class="card">
     <h2>① 근로소득금액 및 과세표준 산출</h2>
     <table>
       <tr><td class="label">총급여</td><td class="num" id="r_salary">100,000,000</td></tr>
@@ -260,16 +52,13 @@
       <tr><td class="label">− 종합소득공제</td><td class="num" id="r_deduction">−1,500,000</td></tr>
       <tr class="total"><td>다른소득 과세표준</td><td class="num" id="r_otherBase">83,750,000</td></tr>
     </table>
-  </div>
-
-  <!-- STEP 2: 비교과세 -->
-  <div class="card">
-    <h2>② 비교과세 산출 — ①·② 중 MAX</h2>
+  </div><div class="card">
+    <h2>비교과세 계산 내역</h2>
     <div id="separateNotice"></div>
     <div class="method-grid">
       <div class="method" id="method1Card">
         <div class="method-title">
-          <span>① 분리과세 방식</span>
+          <span>① 원천징수세율 적용 비교액</span>
           <span class="badge" id="m1badge">선택</span>
         </div>
         <table>
@@ -282,7 +71,7 @@
       </div>
       <div class="method" id="method2Card">
         <div class="method-title">
-          <span>② 종합과세 방식</span>
+          <span>② 초과 금융소득 합산 비교액</span>
           <span class="badge" id="m2badge">선택</span>
         </div>
         <table>
@@ -298,105 +87,30 @@
       <summary>구간 점프 설명 보기</summary>
       <div id="bracketExplain" style="color:#4b5563; padding: 4px 4px 8px;"></div>
     </details>
-  </div>
+  </div><section class="card"><h2>연간 세금 정산표 <small>근로 + 배당 · 지방소득세 포함</small></h2><table><tbody>
+<tr><td>총 산출 소득세</td><td class="num" id="f_sanchul"></td></tr><tr><td>지방소득세</td><td class="num" id="f_local"></td></tr><tr class="total"><td>연간 총세금 추정액</td><td class="num" id="f_decided"></td></tr><tr><td>− 근로분 기납부세액 <small>근로 단독 세액으로 추정</small></td><td class="num" id="f_keunWith"></td></tr><tr><td>− 배당 원천징수 가정액</td><td class="num" id="f_withholding"></td></tr><tr class="total"><td>추가 세금 추정액</td><td class="num" id="f_final"></td></tr></tbody></table><p class="detailnote" id="f_compEffect"></p><div class="rates"><div>배당 세금 부담률<b id="f_effRate"></b></div><div>보험료 포함 부담률<b id="f_effRateAll"></b></div><div>15.4% 대비 증가<b id="f_effRateNote"></b></div></div><p class="detailnote">추가 세금과 비교과세 증가액이 일치하는 것은 이 모델의 기납부세액 가정 때문입니다. 실제 원천징수영수증·세액공제를 반영하면 달라질 수 있습니다.</p></section><div class="card">
+    <h2>건강·장기요양보험료 상세</h2>
 
-   </div><!-- /.left-col -->
-   <div class="right-col">
-
-  <!-- FINAL -->
-  <div class="card" style="background:transparent; border:none; box-shadow:none; padding:0;">
-    <div class="final">
-      <div class="final-row big" style="padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.3); margin-bottom: 4px;">
-        <span>결정세액 <span style="font-size:11px; opacity:0.85;">(1년 총 부담 세금)</span></span>
-        <span class="v"><span id="f_decided">20,264,750</span>원<br><span id="f_compEffect" style="font-size:13px; opacity:0.9; font-weight:600;">(종합과세로 인한 추가세액: +640,750원)</span></span>
-      </div>
-      <div class="final-row" style="font-size: 12.5px; opacity: 0.95; padding-bottom: 12px;">
-        <span>└ 산출세액 <span id="f_sanchul" style="font-weight:600;">18,422,500</span> + 지방세 <span id="f_local" style="font-weight:600;">1,842,250</span></span>
-        <span></span>
-      </div>
-
-      <div style="background: rgba(255,255,255,0.12); padding: 12px 14px; border-radius: 6px; margin: 4px 0 4px;">
-        <div class="final-row" style="padding: 3px 0; font-size: 13px;">
-          <span><b>배당 총 부담률</b> <span style="font-size:11px; opacity:0.85;">(국세청 세금만)</span></span>
-          <span class="v" id="f_effRate" style="font-size: 17px;">17.96%</span>
-        </div>
-        <div class="final-row" style="padding: 3px 0;">
-          <span style="font-weight: 700;">배당 총 부담률 <span style="font-size:11px; opacity:0.85;">(+ 건강보험료 포함)</span></span>
-          <span class="v" id="f_effRateAll" style="font-size: 22px;">19.59%</span>
-        </div>
-        <div class="final-row" style="font-size: 12px; opacity: 0.9; padding: 4px 0 2px; border-top: 1px solid rgba(255,255,255,0.2); margin-top: 4px;">
-          <span><b>배당 추가 부담률</b> <span style="opacity:0.8;">(분리과세 15.4% 대비)</span></span>
-          <span class="v" id="f_effRateNote" style="font-size: 14px;">+4.19%p</span>
-        </div>
-      </div>
-
-      <div style="border-top: 1px solid rgba(255,255,255,0.3); padding-top: 12px; margin-top: 4px;">
-        <div style="font-size:11px; opacity:0.85; margin-bottom: 6px;">▼ 기납부세액 (이미 납부된 세금)</div>
-        <div class="final-row">
-          <span>− 근로소득 원천징수 <span style="font-size:11px; opacity:0.85;">(연말정산 결정세액, 회사 통해 매월 납부)</span></span>
-          <span class="v" id="f_keunWith">−15,774,000원</span>
-        </div>
-        <div class="final-row">
-          <span>− 배당소득 원천징수 <span style="font-size:11px; opacity:0.85;">(15.4%, 받을 때 자동 차감)</span></span>
-          <span class="v" id="f_withholding">−3,850,000원</span>
-        </div>
-        <div class="final-row big" style="margin-top:8px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.25);">
-          <span>= 5월 신고 시 국세청 실제 납부액 <span style="font-size:11px; opacity:0.85;">(통장에서 추가로 빠져나가는 돈)</span></span>
-          <span class="v" id="f_final">640,750원</span>
-        </div>
-      </div>
-    </div>
-    <div class="note">
-      <b>용어 정리</b><br>
-      • <b>결정세액</b> = 1년간 본인이 부담하는 세금 총액 (산출세액 + 지방세, 세액공제 미반영 가정)<br>
-      • <b>종합과세로 인한 추가세액</b> = 배당이 종합과세에 들어와서 늘어난 절대금액 (분리과세였다면 안 냈을 부분)<br>
-      • <b>배당 총 부담률</b> = 배당 1원당 떼이는 세금 비율 (배당 총 부담세금 ÷ 배당)<br>
-      • <b>배당 추가 부담률</b> = 분리과세 15.4% 대비 추가로 더 부담하는 % (= 총 부담률 − 15.4%)<br>
-      • <b>근로소득 원천징수</b> = 회사가 매월 떼고 연말정산으로 정산한 세금 (≒ 근로 단독 결정세액)<br>
-      • <b>배당소득 원천징수</b> = 배당 받을 때 15.4%로 자동 차감<br>
-      • <b>5월 실제 납부액</b> = 결정세액 − 기납부세액 = 본인이 통장에서 추가로 국세청에 보내는 돈 (음수면 환급)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;수학적으로 <b>"5월 실제 납부액 = 종합과세로 인한 추가세액"</b> 이 정확히 일치합니다.<br><br>
-      ※ 본인 인적공제(150만) 외 다른 소득공제 없음 가정. 근로소득세액공제·배당세액공제(국내배당)·외국납부세액공제(해외주식) 등은 미반영. 배당이 2,000만원 이하면 분리과세 종결되어 종합신고 의무 자체가 없으므로 5월 추가 납부 0원.
-    </div>
-  </div>
-
-  <!-- 건강보험료 -->
-  <div class="card">
-    <h2>건강보험료 — 별도 부과 (국민건강보험공단, 국세청 아님)</h2>
-
-    <div style="background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; padding: 12px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 12.5px; line-height: 1.7;">
-      <b>2026년 직장가입자 부과 규칙</b><br>
-      • 건강보험료율 <b>7.19%</b>, 장기요양보험료 = 건강보험료의 <b>12.95%</b><br>
-      • <b>보수월액보험료</b> = 월급 × 7.19% — 회사 50% / 본인 50% 매월 자동 납부<br>
-      • <b>소득월액보험료</b> = (보수외소득 − 2,000만) × 7.19% — <b>본인 100% 부담</b> (보수외소득 연 2,000만 초과시)<br>
-      • 단, 이자·배당소득이 <b>1,000만원 이하면 보수외소득에서 제외</b> → 소득월액보험료 영향 없음<br>
-      • 모든 보험료에 장기요양보험료(건보료의 12.95%)가 추가 부과됨<br>
-      • <span style="opacity:0.75;">※ 지역가입자(자영업·은퇴자)는 별도 산정식 (소득 + 재산 + 자동차)이라 본 시뮬레이터 범위 외</span>
-    </div>
+    <div style="background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; padding: 12px 14px; border-radius: 6px; margin-bottom: 14px; font-size: 12.5px; line-height: 1.7;">직장가입자의 보수 외 소득을 배당만으로 가정합니다. <b>급여분 보험료는 배당 추가 부담에서 제외</b>하고, 배당분 건강보험료와 장기요양보험료만 결과에 합산합니다. 보험료 상·하한 및 실제 고지 조정은 미반영입니다.</div>
 
     <table>
       <tbody>
         <tr><th colspan="2" style="background:#f9fafb;">근로소득 기준 — 보수월액보험료 (배당과 무관, 매월 월급에서 자동 차감)</th></tr>
         <tr><td class="label">건강보험료 (본인 50%)</td><td class="num" id="hi_keun">3,594,400</td></tr>
-        <tr><td class="label">└ + 장기요양보험료 12.95%</td><td class="num" id="hi_keun_ltc">465,477</td></tr>
+        <tr><td class="label">└ 장기요양보험료 (선택한 기준)</td><td class="num" id="hi_keun_ltc">465,477</td></tr>
         <tr><td class="label" style="font-weight:600;">근로분 본인 부담 소계 (연간)</td><td class="num" id="hi_keun_total" style="font-weight:600;">4,059,877</td></tr>
 
         <tr><th colspan="2" style="background:#f9fafb;">보수외소득 기준 — 소득월액보험료 (배당으로 인한 추가 부담)</th></tr>
         <tr><td class="label">건강보험료 (본인 100%) <span id="hi_div_note" style="font-size:11px; color:#92400e;"></span></td><td class="num" id="hi_div">359,500</td></tr>
-        <tr><td class="label">└ + 장기요양보험료 12.95%</td><td class="num" id="hi_div_ltc">46,555</td></tr>
+        <tr><td class="label">└ 장기요양보험료 (선택한 기준)</td><td class="num" id="hi_div_ltc">46,555</td></tr>
         <tr><td class="label" style="font-weight:600;">배당분 본인 부담 소계 (연간)</td><td class="num" id="hi_div_total" style="font-weight:600; background:#fef3c7;">406,055</td></tr>
 
         <tr class="total"><td>건강보험료 본인 부담 합계 (연간)</td><td class="num" id="hi_total">4,465,932</td></tr>
       </tbody>
     </table>
 
-    <div class="note">
-      ※ 보수월액보험료는 매월 월급에서 회사가 자동 차감하고 회사도 50% 같이 부담(여기 표는 본인부담 50%만 표시). 소득월액보험료는 다음 해에 국민건강보험공단이 별도 고지서로 부과(11월경) — 본인이 100% 부담. 보험료 부담의 상한·하한이 있으나 일반적 범위에서는 거의 적용되지 않음.
-    </div>
-  </div>
-
-  <!-- 세율표 -->
-  <div class="card">
+    <div class="note">급여분은 기존 급여 부담입니다. 배당분 보험료는 세금과 별도로 부과되며, 표시된 월액은 연간 추정액을 12로 나눈 참고 금액입니다. 실제 고지 시기·금액과 다를 수 있습니다.</div>
+  </div><div class="card">
     <h2>참고 — 2026년 종합소득세율 (기본세율)</h2>
     <table>
       <thead><tr><th>과세표준 구간</th><th class="num">세율</th><th class="num">누진공제</th></tr></thead>
@@ -412,13 +126,8 @@
       </tbody>
     </table>
     <div class="note">지방소득세는 산출세액의 10% 별도 부과. 금융소득 원천징수율 14%(+지방세 1.4% = 15.4%).</div>
-  </div>
-
-   </div><!-- /.right-col -->
-  </div><!-- /.columns -->
-</div>
-
-<script>
+  </div></div></details>
+<details class="detail assumptions"><summary><span><b>계산 가정과 변경사항</b><small>이 결과를 해석할 때 알아둘 점</small></span><span>＋</span></summary><div><p>원본의 소득세 계산식과 15.4% 배당 원천징수 가정을 유지했습니다. 세액공제·외국납부세액공제·배당가산·다른 소득은 반영하지 않습니다. 실제 국내·해외 배당의 신고 여부와 정산액을 확정하는 도구는 아닙니다.</p><p><b>2026 보험료 기준 보정:</b> 건강보험 7.19%, 장기요양은 건강보험료 × (0.9448% ÷ 7.19%)를 적용합니다. 입력 영역에서 원본의 12.95% 기준과 비교할 수 있습니다. 연간 단순 추정이며 월별 고지·절사·상하한을 반영하지 않습니다.</p><p>세금 정산 시점과 보험료 부과 시점은 다릅니다. ‘추가로 준비할 돈’은 두 부담의 연간 합계이지 같은 날 납부할 금액이 아닙니다. 금액은 각각 원 단위 반올림하므로 표시된 항목 합계와 1원 차이가 날 수 있습니다.</p><p><a href="https://edi.nhis.or.kr/portal/images/popup/20251204_pop01longdesc.html" target="_blank" rel="noopener">국민건강보험공단 2026 보험료율 안내 ↗</a></p></div></details></article></main><footer>입력값은 서버로 전송하지 않습니다. · 금액은 연간 원 기준 · 세무 신고용 확정 계산서가 아닙니다.</footer></div><script>
   // 종합소득세율(기본세율) — [구간상한, 세율, 누진공제]
   const BRACKETS = [
     [14000000, 0.06, 0],
@@ -548,9 +257,9 @@
       m2_sanchul = m1_sanchul;
       m2_bracket = m1_bracket;
 
-      bracketExplain = `배당 ${fmt(dividend)}원은 2,000만원 이하라 분리과세로 종결됩니다. 종합소득세 신고 의무 자체가 없고, 배당은 원천징수 15.4%로 끝납니다. (① ② 동일 표시)`;
+      bracketExplain = `배당 ${fmt(dividend)}원은 2,000만원 이하라 분리과세로 종결됩니다. 이 모델에서는 배당 원천징수 15.4% 외 추가 세금을 계산하지 않습니다. 실제 신고 여부는 소득 종류와 원천징수 여부에 따라 다릅니다. (① ② 동일 표시)`;
       document.getElementById('separateNotice').innerHTML =
-        '<div class="separate-notice">⚠ 배당이 2,000만원 이하라 <b>분리과세로 종결</b>됩니다. 종합과세 비교 자체가 발생하지 않으며, 배당은 원천징수 15.4%로 납세의무 종결.</div>';
+        '<div class="separate-notice">⚠ 배당이 2,000만원 이하라 <b>분리과세로 종결</b>됩니다. 원천징수 15.4%로 종결되는 일반 금융소득을 가정한 결과입니다.</div>';
       document.getElementById('m1_baseCalc').textContent =
         `다른소득 ${fmt(keunAmount)} − 공제 ${fmt(deduction)} = ${fmt(otherBase)}원`;
       document.getElementById('m2_baseCalc').textContent =
@@ -613,7 +322,7 @@
 
     // === 건강보험료 (2026 직장가입자 기준) ===
     const HI_RATE = 0.0719;       // 건강보험료율
-    const LTC_RATIO = 0.1295;     // 장기요양 = 건보료의 12.95%
+    const LTC_RATIO = document.getElementById('insuranceBasis').value === 'original' ? 0.1295 : 0.009448 / HI_RATE;     // 장기요양 = 건보료의 12.95%
 
     // 보수월액보험료 (본인 50% 부담)
     const hi_keun = salary * HI_RATE * 0.5;
@@ -667,6 +376,8 @@
       }
     }
 
+    window.taxView = {salary,dividend,deduction,decided,sanchul,local,keunWithholding,divWithholding,finalPay,hi_div_total,hi_keun_total,hi_total,compEffect};
+    if (typeof renderSummary === 'function') renderSummary(window.taxView);
     if (finalPay >= 0) {
       document.getElementById('f_final').textContent = fmt(finalPay) + '원';
     } else {
@@ -690,6 +401,35 @@
   document.getElementById('deduction').addEventListener('input', update);
 
   update();
-</script>
-</body>
+</script><script>function renderSummary(v){
+ const $=id=>document.getElementById(id), won=n=>Math.round(n).toLocaleString('ko-KR')+'원';
+ const extra=Math.abs(v.finalPay)<.5?0:v.finalPay, insurance=v.hi_div_total;
+ const tax=Math.max(0,v.decided-v.keunWithholding), total=tax+insurance, later=extra+insurance, net=v.dividend-total;
+ const mode=window.taxDisplayMode||'extra';
+ $('currentInputs').textContent='현재 입력 · 총급여 '+won(v.salary)+' / 세전 배당 '+won(v.dividend);
+ $('heroTitle').textContent=mode==='extra'?'추가로 준비할 돈':'배당 때문에 부담하는 전체 금액';
+ $('heroAmount').textContent=Math.round(mode==='extra'?later:total).toLocaleString('ko-KR');
+ $('heroExplain').textContent=mode==='extra'?'이미 원천징수된 배당 세금은 제외했습니다. 세금과 보험료의 납부 시점은 다릅니다.':'원천징수된 세금 + 추가 세금 + 배당분 보험료를 모두 합한 금액입니다.';
+ $('taxSplitLabel').textContent=mode==='extra'?'추가 세금':'배당에 대한 전체 세금';
+ $('taxSplit').textContent=won(mode==='extra'?extra:tax);$('healthSplit').textContent=won(insurance);$('healthMonthly').textContent=won(insurance/12)+'/월';
+ $('already').textContent=won(v.divWithholding);$('netDividend').textContent=won(net);
+ $('flowGross').textContent=won(v.dividend);$('flowWith').textContent=won(v.divWithholding);$('flowLater').textContent=won(later);$('flowNet').textContent=won(net);
+ $('recTotal').textContent=won(v.decided);$('recWage').textContent=won(v.keunWithholding);$('recDiv').textContent=won(v.divWithholding);$('recExtra').textContent=won(extra);
+ $('totalRate').textContent=v.dividend?((total/v.dividend)*100).toFixed(2)+'%':'—';$('totalBurden').textContent=won(total);
+ $('regime').textContent=v.dividend>20000000?'비교과세 계산 구간':v.dividend===0?'배당 소득 없음':'원천징수 종결 가정';
+ const items=[['최종 배당 잔액',net,'#3f8b79'],['이미 원천징수',v.divWithholding,'#a3b3ca'],['추가 세금',extra,'#de9466'],['추가 보험료',insurance,'#8d83bb']];
+ $('burdenBar').innerHTML=items.map(([name,amount,color])=>'<span style="background:'+color+';width:'+(v.dividend?Math.max(0,amount)/v.dividend*100:0)+'%" title="'+name+' '+won(amount)+'"></span>').join('');
+ $('burdenBar').setAttribute('aria-label',v.dividend?items.map(([n,a])=>n+' '+won(a)).join(', '):'배당금 0원');
+ $('legend').innerHTML=items.map(([name,amount,color])=>'<div><span><i style="background:'+color+'"></i>'+name+'</span><b>'+won(amount)+'</b></div>').join('');
+ $('basisNote').textContent=$('insuranceBasis').value==='original'?'원본 비교 모드: 건강보험 7.19% · 장기요양은 건보료의 12.95%':'공식 기준: 건강보험 7.19% · 장기요양은 건보료 × (0.9448% ÷ 7.19%)';
+ document.querySelectorAll('[data-div]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.div)===v.dividend));
+ for(const id of ['modeExtra','modeTotal']){$(id).classList.toggle('active',id===(mode==='extra'?'modeExtra':'modeTotal'));$(id).setAttribute('aria-pressed',id===(mode==='extra'?'modeExtra':'modeTotal')?'true':'false');}
+}
+document.getElementById('modeExtra').onclick=()=>{window.taxDisplayMode='extra';renderSummary(window.taxView)};
+document.getElementById('modeTotal').onclick=()=>{window.taxDisplayMode='total';renderSummary(window.taxView)};
+document.getElementById('insuranceBasis').addEventListener('change',update);
+document.querySelectorAll('[data-div]').forEach(b=>b.onclick=()=>{document.getElementById('dividend').value=b.dataset.div;update()});
+document.getElementById('printBtn').onclick=()=>window.print();
+update();
+</script></body>
 </html>
